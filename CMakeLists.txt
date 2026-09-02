@@ -3,6 +3,7 @@ project(bgl)
 
 set(CMAKE_CXX_STANDARD 20)
 
+# vcpkg triplet: x64-mingw-static
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(cpr CONFIG REQUIRED)
 

@@ -134,12 +134,12 @@ namespace {
         const auto& instances = singleton.getInstances();
 
         if (instances.empty()) {
-            std::cout<<"No instances are installed. Try install by 'download' command.";
+            std::cout << "No instances are installed. Try install by 'download' command.";
             return;
         }
-        std::cout<<"Installed Minecraft instances are list below:\n";
-        for (const auto& e : instances) {
-            std::cout<<e.getName()<<'\n';
+        std::cout << "Installed Minecraft instances are list below:\n";
+        for (const auto& e: instances) {
+            std::cout << e.getName() << '\n';
         }
     }
 }
@@ -176,10 +176,11 @@ namespace bgl {
             while (iss >> arg) {
                 args.emplace_back(arg);
             }
-            if (args.size() >= 3) {
-                std::cout << "Too many arguments." << std::endl;
-            } else if (args.size() == 1) {
+            if (args.size() == 1) {
                 args.emplace_back();
+            } else if (args.size() >= 3) {
+                std::cout << "Too many arguments." << std::endl;
+                continue;
             } else if (arg.empty()) {
                 continue;
             }
@@ -195,11 +196,11 @@ namespace bgl {
         instances_.clear();
         namespace fs = std::filesystem;
         const fs::path versionsPath = ".minecraft/versions";
-        for (const auto& entry : fs::directory_iterator(versionsPath)) {
+        for (const auto& entry: fs::directory_iterator(versionsPath)) {
             if (!fs::exists(entry) || !entry.is_directory()) break;
             auto jar = entry.path() / "client.jar";
             auto name = getFileName(entry.path().generic_string());
-            auto json = entry.path() /  (name + ".json");
+            auto json = entry.path() / (name + ".json");
             if (fs::exists(jar) && fs::exists(json)) {
                 instances_.emplace_back(name);
             }
