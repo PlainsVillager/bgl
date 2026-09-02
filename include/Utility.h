@@ -12,6 +12,7 @@ namespace bgl {
     [[deprecated]] bool downloadFile(std::string url, std::string path);
     bool tryDownloadFile(std::string url, std::string path, std::size_t tryTimes = 3);
     void multiThreadDownload(std::queue<std::pair<std::string, std::string>>& files);
+    std::string getFileName(std::string urlOrPath);
 }
 
 #endif //BGL_UTILITY_H

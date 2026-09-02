@@ -11,7 +11,8 @@ add_executable(bgl main.cpp
         include/LocalInstance.h
         include/Launcher.h
         src/Launcher.cpp
-        src/Utility.cpp)
+        src/Utility.cpp
+        src/LocalInstance.cpp)
 
 target_include_directories(bgl PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_link_libraries(bgl PRIVATE nlohmann_json::nlohmann_json)

@@ -6,14 +6,20 @@
 #define BGL_LAUNCHER_H
 
 #include <string_view>
+#include <vector>
+
+#include "LocalInstance.h"
 
 namespace bgl {
     class Launcher {
     public:
         static Launcher& getSingleton();
         void start();
+        void scanInstances();
+        [[nodiscard]] const std::vector<LocalInstance>& getInstances() const;
     private:
         Launcher();
+        std::vector<LocalInstance> instances_{};
     };
 }
 

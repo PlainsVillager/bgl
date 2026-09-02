@@ -13,13 +13,6 @@
 #include <condition_variable>
 #include <cpr/cpr.h>
 
-namespace {
-    std::string getFileName(std::string urlOrPath) {
-        std::size_t slashPos = urlOrPath.find_last_of('/');
-        return urlOrPath.substr(slashPos + 1);
-    }
-}
-
 namespace bgl {
     namespace fs = std::filesystem;
 
@@ -95,5 +88,10 @@ namespace bgl {
         for (auto& t : workers) {
             t.join();
         }
+    }
+
+    std::string getFileName(std::string urlOrPath) {
+        std::size_t slashPos = urlOrPath.find_last_of('/');
+        return urlOrPath.substr(slashPos + 1);
     }
 }
