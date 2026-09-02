@@ -180,6 +180,8 @@ namespace bgl {
                 std::cout << "Too many arguments." << std::endl;
             } else if (args.size() == 1) {
                 args.emplace_back();
+            } else if (arg.empty()) {
+                continue;
             }
             try {
                 actions[args.at(0)](args.at(1));
