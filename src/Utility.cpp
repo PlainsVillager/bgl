@@ -13,13 +13,11 @@
 #include <condition_variable>
 #include <cpr/cpr.h>
 
-namespace bgl {
-    namespace fs = std::filesystem;
-
+namespace {
     // for e.g.  a/b.txt
-    bool downloadFile(std::string url, std::string path) {
-        //todo
-        std::string fileName = getFileName(url);
+    bool downloadFile(const std::string& url, const std::string& path) {
+        namespace fs = std::filesystem;
+        std::string fileName = bgl::getFileName(url);
         fs::path fullPath{path + '/' + fileName};
         if (!fs::exists(path)) fs::create_directories(path);
         if (fs::exists(fullPath)) return true;
@@ -37,12 +35,14 @@ namespace bgl {
         std::cout << "Complete" << std::endl;
         return true;
     }
+}
 
-    bool tryDownloadFile(std::string url, std::string path, std::size_t tryTimes) {
+namespace bgl {
+    bool tryDownloadFile(const std::string& url, const std::string& path, std::size_t tryTimes) {
         std::size_t i = 0;
         while (i < tryTimes) {
             ++i;
-            if (tryDownloadFile(url, path)) return true;
+            if (downloadFile(url, path)) return true;
         }
         return false;
     }
@@ -90,8 +90,8 @@ namespace bgl {
         }
     }
 
-    std::string getFileName(std::string urlOrPath) {
-        std::size_t slashPos = urlOrPath.find_last_of('/');
+    std::string getFileName(const std::string& urlOrPath) {
+        const std::size_t slashPos = urlOrPath.find_last_of('/');
         return urlOrPath.substr(slashPos + 1);
     }
 }
