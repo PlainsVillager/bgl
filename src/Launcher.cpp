@@ -7,7 +7,6 @@
 #include <fstream>
 #include <sstream>
 #include <format>
-#include <string_view>
 #include <vector>
 #include <functional>
 #include <unordered_map>
@@ -16,8 +15,8 @@
 
 namespace {
     void printWelcome() {
-        std::cout << "Bgl Minecraft Launcher Console Version " << bgl::constants::LAUNCHER_VER_MAJOR << '.' <<
-                bgl::constants::LAUNCHER_VER_MINOR << std::endl;
+        std::cout << "Bgl Minecraft Launcher Console Version " << bgl::constants::LAUNCHER_VER_MAJOR_STR << '.' <<
+                bgl::constants::LAUNCHER_VER_MINOR_STR << std::endl;
     }
 
     void helpAction(std::string_view queryCmd) {
@@ -54,7 +53,7 @@ namespace {
     }
 
     void downloadAction(std::string version) {
-        bgl::downloadFile("https://piston-meta.mojang.com/mc/game/version_manifest.json",
+        bgl::tryDownloadFile("https://piston-meta.mojang.com/mc/game/version_manifest.json",
                                    ".minecraft/versions");
         // 加载version_manifest.json
         std::ifstream ifs(".minecraft/versions/version_manifest.json");
@@ -75,7 +74,7 @@ namespace {
         }
 
         // 下载版本json文件
-        bgl::downloadFile(versions[version], ".minecraft/versions/" + version);
+        bgl::tryDownloadFile(versions[version], ".minecraft/versions/" + version);
 
         // 加载版本json文件
         ifs.open(".minecraft/versions/" + version + '/' + version + ".json");
@@ -85,10 +84,10 @@ namespace {
 
         // 开始解析版本json文件
         //  下载客户端jar文件
-        bgl::downloadFile(verJson["downloads"]["client"]["url"],
+        bgl::tryDownloadFile(verJson["downloads"]["client"]["url"],
                                    ".minecraft/versions/" + version);
         //  下载资源索引文件
-        bgl::downloadFile(verJson["assetIndex"]["url"],
+        bgl::tryDownloadFile(verJson["assetIndex"]["url"],
                                      ".minecraft/assets/indexes");
 
         //  解析库文件列表
@@ -107,13 +106,13 @@ namespace {
         nlohmann::json index;
         ifs>>index;
         ifs.close();
-        //  下载assets TODO: 多线程
+        //  下载assets
         //std::unordered_map<std::string, std::string> files{};
         std::queue<std::pair<std::string, std::string>> files{};
         for (auto [filePath, fileInfo] : index["objects"].items()) {
             std::string hashFull{fileInfo["hash"]};
             std::string hashFront{hashFull.substr(0, 2)};
-            std::string url = "https://bmclapi2.bangbang93.com/assets/" + hashFront + "/" + hashFull;
+            std::string url = "https://bmclapi2.bangbang93.com/assets/" + hashFront + "/" += hashFull;
             // bgl::downloadFile(url, ".minecraft/assets/objects/" + hashFront);
             files.emplace(url, ".minecraft/assets/objects/" + hashFront);
         }
@@ -165,7 +164,7 @@ namespace bgl {
             }
             try {
                 actions[args.at(0)](args.at(1));
-            } catch (const std::bad_function_call& e) {
+            } catch (const std::bad_function_call&) {
                 std::cout << "Unknown command. Type help for command list." << std::endl;
             }
         }

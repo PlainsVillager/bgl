@@ -9,7 +9,8 @@
 #include <queue>
 
 namespace bgl {
-    void downloadFile(std::string url, std::string path);
+    [[deprecated]] bool downloadFile(std::string url, std::string path);
+    bool tryDownloadFile(std::string url, std::string path, std::size_t tryTimes = 3);
     void multiThreadDownload(std::queue<std::pair<std::string, std::string>>& files);
 }
 

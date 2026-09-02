@@ -24,12 +24,12 @@ namespace bgl {
     namespace fs = std::filesystem;
 
     // for e.g.  a/b.txt
-    void downloadFile(std::string url, std::string path) {
+    bool downloadFile(std::string url, std::string path) {
         //todo
         std::string fileName = getFileName(url);
         fs::path fullPath{path + '/' + fileName};
         if (!fs::exists(path)) fs::create_directories(path);
-        if (fs::exists(fullPath)) return;
+        if (fs::exists(fullPath)) return true;
 
         std::cout << "Downloading " << url << "...";
         std::ofstream out(fullPath.c_str(), std::ios::binary);
@@ -38,10 +38,20 @@ namespace bgl {
 
         if (r.status_code != 200) {
             std::cerr << "Failed: " << r.status_code << " " << r.error.message << "\n";
-            return;
+            return false;
         }
         out.close();
         std::cout << "Complete" << std::endl;
+        return true;
+    }
+
+    bool tryDownloadFile(std::string url, std::string path, std::size_t tryTimes) {
+        std::size_t i = 0;
+        while (i < tryTimes) {
+            ++i;
+            if (tryDownloadFile(url, path)) return true;
+        }
+        return false;
     }
 
     // 尽可能少调用该方法
@@ -68,7 +78,7 @@ namespace bgl {
                         task = files.front();
                         files.pop();
                     }
-                    downloadFile(task.first, task.second);
+                    tryDownloadFile(task.first, task.second);
                     --remainingTasks;
                 }
             });
