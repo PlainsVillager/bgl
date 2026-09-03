@@ -56,6 +56,18 @@ namespace {
     }
 
     void downloadAction(const std::string& version) {
+        {
+            auto& singleton = bgl::Launcher::getSingleton();
+            singleton.scanInstances();
+            auto& instances = singleton.getInstances();
+            for (const auto& instance : instances) {
+                if (instance.getName() == version) {
+                    std::cout<<"This version has been installed.\n";
+                    return;
+                }
+            }
+        }
+
         bgl::tryDownloadFile("https://piston-meta.mojang.com/mc/game/version_manifest.json",
                              ".minecraft/versions");
         // 加载version_manifest.json
@@ -86,6 +98,8 @@ namespace {
         ifs.close();
 
         // 开始解析版本json文件
+        // 解析index代码
+        std::string indexCode = verJson["assetIndex"]["id"];
         //  下载客户端jar文件
         bgl::tryDownloadFile(verJson["downloads"]["client"]["url"],
                              ".minecraft/versions/" + version);
@@ -95,32 +109,29 @@ namespace {
 
         //  解析库文件列表
         std::unordered_map<std::string, std::string> libraries{};
-        std::vector<std::string> natives{};
+
         for (const auto& elem: verJson["libraries"]) {
             std::string url = elem["downloads"]["artifact"]["url"];
             std::string var2 = elem["downloads"]["artifact"]["path"];
             std::string path = ".minecraft/libraries/" + var2;
             libraries[url] = path;
-            natives.push_back(var2);
         }
 
         //  加载资源索引文件
-        ifs.open(".minecraft/assets/indexes/32.json");
+        ifs.open(".minecraft/assets/indexes/" + indexCode + ".json");
         nlohmann::json index;
         ifs >> index;
         ifs.close();
-        //  下载assets
-        //std::unordered_map<std::string, std::string> files{};
+        //  assets push queue
         std::queue<std::pair<std::string, std::string> > files{};
         for (auto [filePath, fileInfo]: index["objects"].items()) {
             std::string hashFull{fileInfo["hash"]};
             std::string hashFront{hashFull.substr(0, 2)};
             std::string url = "https://bmclapi2.bangbang93.com/assets/" + hashFront + "/" += hashFull;
-            // bgl::downloadFile(url, ".minecraft/assets/objects/" + hashFront);
             files.emplace(url, ".minecraft/assets/objects/" + hashFront);
         }
 
-        // 下载库文件
+        // libraries push
         for (const auto& [url, path]: libraries) {
             std::size_t slash = path.find_last_of('/');
             files.emplace(url, path.substr(0, slash));
@@ -130,8 +141,8 @@ namespace {
     }
 
     void listAction(std::string_view param) {
-        bgl::Launcher singleton = bgl::Launcher::getSingleton();
-        const auto& instances = singleton.getInstances();
+        auto& singleton = bgl::Launcher::getSingleton(); // 使用引用
+        auto& instances = singleton.getInstances();
 
         if (instances.empty()) {
             std::cout << "No instances are installed. Try install by 'download' command.";
@@ -140,6 +151,25 @@ namespace {
         std::cout << "Installed Minecraft instances are list below:\n";
         for (const auto& e: instances) {
             std::cout << e.getName() << '\n';
+        }
+    }
+
+    void launchAction(std::string_view name) {
+
+        if (name.empty()) {
+            std::cout<<"a mc version name must be given as the second param.\n";
+            return;
+        }
+        auto& singleton = bgl::Launcher::getSingleton();
+        auto& instances = singleton.getInstances();
+        for (const auto& e:instances) {
+            if (e.getName() == name) {
+                int code = e.launch();
+                if (code != 0) {
+                    std::cout<<"Oops! Something went wrong when launching Minecraft.\n";
+                }
+                break;
+            }
         }
     }
 }
@@ -160,12 +190,13 @@ namespace bgl {
         actions.insert_or_assign("download", &downloadAction);
         actions.insert_or_assign("exit", &shutDownAction);
         actions.insert_or_assign("help", &helpAction);
+        actions.insert_or_assign("launch", &launchAction);
         actions.insert_or_assign("list", &listAction);
 
         printWelcome();
 
         while (true) {
-            scanInstances();
+            getSingleton().scanInstances();
             std::cout << ">>";
             std::string cmd;
             std::getline(std::cin, cmd);
@@ -197,17 +228,17 @@ namespace bgl {
         namespace fs = std::filesystem;
         const fs::path versionsPath = ".minecraft/versions";
         for (const auto& entry: fs::directory_iterator(versionsPath)) {
-            if (!fs::exists(entry) || !entry.is_directory()) break;
-            auto jar = entry.path() / "client.jar";
+            if (!entry.is_directory()) continue;
+            auto jar = std::format("{}/client.jar", entry.path().generic_string());
             auto name = getFileName(entry.path().generic_string());
-            auto json = entry.path() / (name + ".json");
+            auto json = std::format("{}/{}.json", entry.path().generic_string(), name);
             if (fs::exists(jar) && fs::exists(json)) {
                 instances_.emplace_back(name);
             }
         }
     }
 
-    const std::vector<LocalInstance>& Launcher::getInstances() const {
+    std::vector<LocalInstance>& Launcher::getInstances()  {
         return instances_;
     }
 }

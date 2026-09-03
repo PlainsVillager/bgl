@@ -13,10 +13,12 @@
 namespace bgl {
     class Launcher {
     public:
+        Launcher(const Launcher&) = delete;
+        Launcher& operator=(const Launcher&) = delete;
         static Launcher& getSingleton();
         void start();
         void scanInstances();
-        [[nodiscard]] const std::vector<LocalInstance>& getInstances() const;
+        [[nodiscard]] std::vector<LocalInstance>& getInstances() ;
     private:
         Launcher();
         std::vector<LocalInstance> instances_{};
@@ -24,11 +26,8 @@ namespace bgl {
 }
 
 namespace bgl::constants {
-    // inline constexpr int LAUNCHER_VER_MAJOR = 0;
-    // inline constexpr int LAUNCHER_VER_MINOR = 1;
     inline constexpr std::string_view LAUNCHER_VER_MAJOR_STR = "alpha";
-    inline constexpr std::string_view LAUNCHER_VER_MINOR_STR = "alpha";
-
+    inline constexpr std::string_view LAUNCHER_VER_MINOR_STR = "build Sep 3 2026 UTC 12:06";
 }
 
 #endif //BGL_LAUNCHER_H

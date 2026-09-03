@@ -1,7 +1,6 @@
 #include "include/Launcher.h"
 
 int main() {
-    bgl::Launcher launcher = bgl::Launcher::getSingleton();
-    launcher.start();
+    bgl::Launcher::getSingleton().start();
     return 0;
 }
