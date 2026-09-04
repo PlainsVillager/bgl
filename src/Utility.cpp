@@ -20,7 +20,7 @@ namespace {
         std::string fileName = bgl::getFileName(url);
         fs::path fullPath{path + '/' + fileName};
         if (!fs::exists(path)) fs::create_directories(path);
-        if (fs::exists(fullPath)) return true;
+        //if (fs::exists(fullPath)) return true; //todo: hash verify
 
         std::cout << "Downloading " << url << "...";
         std::ofstream out(fullPath.c_str(), std::ios::binary);
@@ -28,17 +28,17 @@ namespace {
         cpr::Response r = cpr::Download(out, cpr::Url{url});
 
         if (r.status_code != 200) {
-            std::cerr << "Failed: " << r.status_code << " " << r.error.message << "\n";
+            std::cerr << "Failed: " << r.status_code << " " << r.error.message << '\n';
             return false;
         }
         out.close();
-        std::cout << "Complete" << std::endl;
+        std::cout << "Complete\n";
         return true;
     }
 }
 
 namespace bgl {
-    bool tryDownloadFile(const std::string& url, const std::string& path, std::size_t tryTimes) {
+    bool tryDownloadFile(const std::string& url, const std::string& path, const std::size_t tryTimes) {
         std::size_t i = 0;
         while (i < tryTimes) {
             ++i;
@@ -47,7 +47,6 @@ namespace bgl {
         return false;
     }
 
-    // 尽可能少调用该方法
     void multiThreadDownload(std::queue<std::pair<std::string, std::string>>& files) {
         const std::size_t threadNum{std::thread::hardware_concurrency()};
 
