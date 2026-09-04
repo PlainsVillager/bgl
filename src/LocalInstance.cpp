@@ -51,7 +51,7 @@ namespace bgl {
         execCmd.append(" net.minecraft.client.main.Main ");
         execCmd.append("--username \"steve\" ");
         execCmd.append(std::format("--version \"{}\" ", name_));
-        execCmd.append(std::format("--gamedir \"{}\" ", fs::absolute(std::format(".minecraft/versions/{}", name_)).generic_string()));
+        execCmd.append(std::format("--gameDir \"{}\" ", fs::absolute(std::format(".minecraft/versions/{}", name_)).generic_string()));
         execCmd.append(std::format("--assetsDir \"{}\" ", fs::absolute(".minecraft/assets").generic_string()));
         execCmd.append(std::format("--assetIndex {} ", indexCode_));
         execCmd.append("--uuid 380df991f603344ca090369bad2a924a --accessToken c09158f8ac46412d8a9f142833993627 ");
