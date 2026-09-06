@@ -1,0 +1,5 @@
+CompileFlags:
+  Remove:
+    - "-fdeps-format*"
+    - "-fmodules-*"
+    - "-fmodule-*"

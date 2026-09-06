@@ -41,13 +41,13 @@ namespace bgl {
     int Instance::download() {
         tryDownloadFile("https://piston-meta.mojang.com/mc/game/version_manifest.json",
                              ".minecraft/versions");
-        // 加载version_manifest.json
+        // load manifest
         std::ifstream ifs(".minecraft/versions/version_manifest.json");
         nlohmann::json manifest;
         ifs >> manifest;
         ifs.close();
 
-        // 解析版本列表
+        // parse list
         std::unordered_map<std::string, std::string> versions;
         for (const auto& elem: manifest["versions"]) {
             std::string id = elem["id"];
@@ -58,56 +58,62 @@ namespace bgl {
             return 101;
         }
 
-        // 下载版本json文件
         tryDownloadFile(versions[name_], ".minecraft/versions/" + name_);
 
-        // 加载版本json文件
+        // load json
         ifs.open(".minecraft/versions/" + name_ + '/' + name_ + ".json");
         nlohmann::json verJson;
         ifs >> verJson;
         ifs.close();
 
-        // 开始解析版本json文件
-        // 解析index代码
+        // parse json
+        // parse index code
         std::string indexCode = verJson["assetIndex"]["id"];
-        //  下载客户端jar文件
+        //  download client jar
         tryDownloadFile(verJson["downloads"]["client"]["url"],
                              ".minecraft/versions/" + name_);
-        //  下载资源索引文件
+        //  download index
         tryDownloadFile(verJson["assetIndex"]["url"],
                              ".minecraft/assets/indexes");
 
-        //  解析库文件列表
-        std::unordered_map<std::string, std::string> libraries{};
+        //  parse libraries
+        // std::unordered_map<std::string, std::string> libraries{};
+        std::vector<std::string> librariesUrl{};
+        std::vector<std::string> librariesHash{};
+        std::vector<std::string> librariesPath{};
+        librariesUrl.reserve(96);
+        librariesHash.reserve(96);
+        librariesPath.reserve(96);
 
         for (const auto& elem: verJson["libraries"]) {
             std::string url = elem["downloads"]["artifact"]["url"];
-            std::string var2 = elem["downloads"]["artifact"]["path"];
-            std::string path = ".minecraft/libraries/" + var2;
-            libraries[url] = path;
+            std::string hash = elem["downloads"]["artifact"]["sha1"];
+            std::filesystem::path artifactPath{elem["downloads"]["artifact"]["path"].get<std::string>()};
+            std::string path = (std::filesystem::path{".minecraft/libraries"} / artifactPath.parent_path()).generic_string();
+            librariesUrl.emplace_back(std::move(url));
+            librariesHash.emplace_back(std::move(hash));
+            librariesPath.emplace_back(std::move(path));
         }
 
-        //  加载资源索引文件
+        //  load index
         ifs.open(".minecraft/assets/indexes/" + indexCode + ".json");
         nlohmann::json index;
         ifs >> index;
         ifs.close();
         //  assets push queue
-        std::queue<std::pair<std::string, std::string> > files{};
+        std::queue<std::array<std::string, 3>> filesWithHash{};// order: url path hash
         for (auto [filePath, fileInfo]: index["objects"].items()) {
             std::string hashFull{fileInfo["hash"]};
             std::string hashFront{hashFull.substr(0, 2)};
             std::string url = "https://bmclapi2.bangbang93.com/assets/" + hashFront + "/" += hashFull;
-            files.emplace(url, ".minecraft/assets/objects/" + hashFront);
+            filesWithHash.emplace(std::array{std::move(url), ".minecraft/assets/objects/" + hashFront, std::move(hashFull)});
         }
 
-        // libraries push
-        for (const auto& [url, path]: libraries) {
-            std::size_t slash = path.find_last_of('/');
-            files.emplace(url, path.substr(0, slash));
+        for (std::size_t i = 0; i < librariesUrl.size(); ++i) {
+            filesWithHash.emplace(std::array{std::move(librariesUrl[i]), std::move(librariesPath[i]) ,std::move(librariesHash[i])});
         }
         //多线程下载
-        multiThreadDownload(files);
+        multiThreadDownload(filesWithHash);
         local_ = true;
         return 0;
     }
@@ -115,11 +121,12 @@ namespace bgl {
     /// @return 0 success
     /// @return 1 fail
     int Instance::launch() {
-        std::string execCmd{};
+        std::string args{};
+        args.append("@echo off\ncd /D G:\\Dev\\C++\\bgl\\out\\build\\debug\\.minecraft\\versions\\26.2\n");
         namespace fs = std::filesystem;
         fs::path nativePath = fs::absolute(std::format(".minecraft/versions/{}/natives", name_));
-        execCmd.append(std::format("java -Djava.library.path={} ", nativePath.generic_string()));
-        execCmd.append("-cp ");
+        args.append(std::format("java -Djava.library.path={} ", nativePath.generic_string()));
+        args.append("-cp ");
 
         //load json file
         std::ifstream ifs;
@@ -132,24 +139,28 @@ namespace bgl {
         for (const auto& elem: json["libraries"]) {
             {
                 std::string relativePath = elem["downloads"]["artifact"]["path"];
-                execCmd.append(fs::absolute(std::format(".minecraft/libraries/{}", relativePath)).generic_string());
-                execCmd.append(";");
+                args.append(fs::absolute(std::format(".minecraft/libraries/{}", relativePath)).generic_string());
+                args.append(";");
             }
         }
-        execCmd.append(fs::absolute(std::format(".minecraft/versions/{}/client.jar", name_)).generic_string());
-        execCmd.append(" net.minecraft.client.main.Main ");
-        execCmd.append("--username \"steve\" ");
-        execCmd.append(std::format("--version \"{}\" ", name_));
-        execCmd.append(std::format("--gameDir \"{}\" ", fs::absolute(std::format(".minecraft/versions/{}", name_)).generic_string()));
-        execCmd.append(std::format("--assetsDir \"{}\" ", fs::absolute(".minecraft/assets").generic_string()));
-        execCmd.append(std::format("--assetIndex {} ", indexCode_));
-        execCmd.append("--uuid 380df991f603344ca090369bad2a924a --accessToken c09158f8ac46412d8a9f142833993627 ");
+        args.append(fs::absolute(std::format(".minecraft/versions/{}/client.jar", name_)).generic_string());
+        
+        args.append(" ");
 
-        auto launchBat{"launch.bat"};
+        args.append("net.minecraft.client.main.Main ");
+        args.append("--username \"steve\" ");
+        args.append(std::format("--version \"{}\" ", name_));
+        args.append(std::format("--gameDir \"{}\" ", fs::absolute(std::format(".minecraft/versions/{}", name_)).generic_string()));
+        args.append(std::format("--assetsDir \"{}\" ", fs::absolute(".minecraft/assets").generic_string()));
+        args.append(std::format("--assetIndex {} ", indexCode_));
+        args.append("--uuid 380df991f603344ca090369bad2a924a --accessToken c09158f8ac46412d8a9f142833993627 ");
+
+        auto launchBat{"args.bat"};
         std::ofstream ofs(launchBat);
-        ofs<<execCmd;
+        ofs<<args;
         ofs.close();
-        system(launchBat);
+
+        system("args.bat");
 
         return 0;
     }

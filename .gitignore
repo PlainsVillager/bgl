@@ -2,3 +2,7 @@
 .vs/
 out/
 build/
+.cache/
+cmake_generate.bat
+.minecraft/
+.zed/

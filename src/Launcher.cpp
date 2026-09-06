@@ -3,14 +3,13 @@
 //
 #include "Launcher.h"
 #include "Utility.h"
+#include <filesystem>
 #include <iostream>
-#include <fstream>
 #include <sstream>
 #include <format>
 #include <vector>
 #include <functional>
 #include <unordered_map>
-#include <queue>
 #include <nlohmann/json.hpp>
 
 namespace {
@@ -67,8 +66,7 @@ namespace {
             auto& instances = singleton.getInstances();
             for (const auto& instance: instances) {
                 if (instance.getName() == version) {
-                    std::cout << "This version has been installed.\n";
-                    //return;
+                    std::cout << "This version has been installed. So we will be checking file hash soon.\n";
                 }
             }
         }
@@ -85,7 +83,7 @@ namespace {
         auto& instances = singleton.getInstances();
 
         if (instances.empty()) {
-            std::cout << "No instances are installed. Try install by 'download' command.";
+            std::cout << "No instances are installed. Try install by 'download' command.\n";
             return;
         }
         std::cout << "Installed Minecraft instances are list below:\n";
@@ -119,9 +117,8 @@ namespace bgl {
         return singleton;
     }
 
-    // ReSharper disable once CppMemberFunctionMayBeStatic
     void Launcher::startLoop() {
-        // 函数表 不同命令对应不同操作逻辑
+        // function table consists of vary actions
         std::unordered_map<std::string, std::function<void(std::string)> > actions;
 
         actions.insert_or_assign("about", &aboutAction);
@@ -165,6 +162,7 @@ namespace bgl {
         instances_.clear();
         namespace fs = std::filesystem;
         const fs::path versionsPath = ".minecraft/versions";
+        if(!fs::exists(versionsPath)) return;
         for (const auto& entry: fs::directory_iterator(versionsPath)) {
             if (!entry.is_directory()) continue;
             auto jar = std::format("{}/client.jar", entry.path().generic_string());

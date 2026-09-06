@@ -1,12 +1,12 @@
-cmake_minimum_required(VERSION 4.3)
+cmake_minimum_required(VERSION 4.4)
 project(bgl)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # vcpkg triplet: x64-mingw-static
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(cpr CONFIG REQUIRED)
-find_package(7zip CONFIG REQUIRED)
 
 add_executable(bgl main.cpp
         include/Utility.h
@@ -20,4 +20,3 @@ target_include_directories(bgl PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
 target_link_libraries(bgl PRIVATE nlohmann_json::nlohmann_json)
 target_link_libraries(bgl PRIVATE cpr::cpr)
-target_link_libraries(bgl PRIVATE 7zip::7zip)
