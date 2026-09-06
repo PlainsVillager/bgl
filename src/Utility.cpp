@@ -15,13 +15,16 @@
 
 namespace {
     namespace fs = std::filesystem;
+
+    //todo method not implemented yet
     bool compareSHA1(const fs::path& fullPath, const std::string& sha1) {
         //do sth
         // if (sha1.empty()) return true;
         return true;
     }
 
-    // for e.g.  a/b.txt
+    // path: whole path of the file e.g Directory/FileName.txt
+    // sha1: SHA-1 value of the file. This will be checked when the file already exists
     bool downloadFile(const std::string& url, const std::string& path, const std::string& sha1) {
 
         std::string fileName = bgl::getFileName(url);
@@ -33,13 +36,13 @@ namespace {
             if (compareSHA1(fullPath, sha1)) return true;
         }
 
-        std::cout << "Downloading " << url << "...";
+        std::cout << "Downloading " << url << " ...";
         std::ofstream out(fullPath.c_str(), std::ios::binary);
 
         cpr::Response r = cpr::Download(out, cpr::Url{url});
 
         if (r.status_code != 200) {
-            std::cerr << "Failed: " << r.status_code << " " << r.error.message << '\n';
+            std::cerr << "Failed: " << r.status_code << " " << r.error.message << " will retry\n";
             return false;
         }
         out.close();

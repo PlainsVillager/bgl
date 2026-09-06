@@ -122,7 +122,7 @@ namespace bgl {
     /// @return 1 fail
     int Instance::launch() {
         std::string args{};
-        args.append("@echo off\ncd /D G:\\Dev\\C++\\bgl\\out\\build\\debug\\.minecraft\\versions\\26.2\n");
+        args.append("@echo off\n");
         namespace fs = std::filesystem;
         fs::path nativePath = fs::absolute(std::format(".minecraft/versions/{}/natives", name_));
         args.append(std::format("java -Djava.library.path={} ", nativePath.generic_string()));
