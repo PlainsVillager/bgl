@@ -5,14 +5,14 @@
 #ifndef BGL_UTILITY_H
 #define BGL_UTILITY_H
 
-#include <string>
-#include <queue>
 #include <array>
+#include <queue>
+#include <string>
 
 namespace bgl {
-    bool tryDownloadFile(const std::string& url, const std::string& path, std::size_t tryTimes = 3, const std::string& sha1 = {});
-    void multiThreadDownload(std::queue<std::array<std::string, 3>>& files);
-    std::string getFileName(const std::string& urlOrPath);
+bool tryDownloadFile(std::string&& url, std::string&& path, std::size_t tryTimes = 3, std::string&& sha1 = { });
+void multiThreadDownload(std::queue<std::array<std::string, 3>>& files);
+std::string getFileName(const std::string& urlOrPath);
 }
 
-#endif //BGL_UTILITY_H
+#endif // BGL_UTILITY_H

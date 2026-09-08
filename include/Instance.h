@@ -8,25 +8,25 @@
 #include <filesystem>
 
 namespace bgl {
-    class Instance {
-    public:
-        explicit Instance(std::string name, bool local);
+class Instance {
+public:
+    explicit Instance(std::string name);
 
-        //view
-        [[nodiscard]] std::string getName() const;
-        [[nodiscard]] bool isLocal() const;
-        void setLocal(bool val);
+    // view
+    [[nodiscard]] std::string getName() const;
 
-        //actions
-        int download(); // verify
-        int launch();
+    bool compare(const Instance& other) const;
 
-    private:
-        std::string name_;
-        std::filesystem::path path_;
-        int indexCode_;
-        bool local_;
-    };
+    // actions
+    bool downloadAndVerify();
+    void launch();
+
+private:
+    std::string name_;
+    std::string indexCode_;
+
+    std::filesystem::path path_;
+};
 }
 
-#endif //BGL_INSTANCE_H
+#endif // BGL_INSTANCE_H

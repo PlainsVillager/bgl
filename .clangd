@@ -1,5 +1,24 @@
 CompileFlags:
+  Add: [-std=c++23]
+  Compiler: g++
   Remove:
     - "-fdeps-format*"
     - "-fmodules-*"
     - "-fmodule-*"
+
+Diagnostics:
+  ClangTidy:
+    Add: 
+      - "bugprone-*"
+      - "google-*"
+      - "modernize-*"
+      - "performance-*"
+      # - "clang-analyzer-core.*"
+    Remove: 
+      - "modernize-use-trailing-return-type"
+      - "google-readability-braces-around-statements"
+
+InlayHints:
+  BlockEnd: true
+  ParameterNames: true
+  Enabled: true

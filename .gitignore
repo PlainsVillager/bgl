@@ -1,3 +1,4 @@
+# build cache
 .idea/
 .vs/
 out/
@@ -6,3 +7,10 @@ build/
 cmake_generate.bat
 .minecraft/
 .zed/
+
+# llvm tools
+.clang-format
+.clang-tidy*
+
+# vcpkg config
+vcpkg-configuration.json
