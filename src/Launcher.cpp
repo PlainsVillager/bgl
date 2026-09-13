@@ -3,15 +3,17 @@
 //
 #include "Launcher.h"
 #include "Utility.h"
+#include "configuration/Player.hpp"
+#include "configuration/PlayerManager.hpp"
 #include <filesystem>
 #include <format>
-#include <functional>
 #include <iostream>
 #include <memory>
 #include <nlohmann/json.hpp>
 #include <sstream>
+#include <stdexcept>
+#include <string>
 #include <string_view>
-#include <unordered_map>
 #include <vector>
 
 namespace {
@@ -38,27 +40,30 @@ void helpAction(std::string_view queryCmd)
         std::cout << "Launch a local Minecraft instance\n"
                   << "command syntax: launch <name: string>\n"
                   << "param explanation: \"name\" for e.g. 26.2 or 20w06a or 26.3-snapshot-10 with no blank)" << "param explanation: \"name\" for e.g. 26.2 or 20w06a or 26.3-snapshot-10 with no blank)" << '\n';
+    } else if (queryCmd == "player") {
+        std::cout << "Player related operation\n";
+        std::cout << "player add <playerName : string> or player <playerName : string>\n";
     } else if (queryCmd == "refresh") {
         std::cout << "Refresh versions installed\n";
     } else if (queryCmd.empty()) {
-        std::cout << "about\ndownload\nexit\nhelp\nlist\nlaunch\nrefresh\nremove\nupdate\n";
+        std::cout << "about\ndownload\nexit\nhelp\nlist\nlaunch\nplayer\nrefresh\nremove\nupdate\n";
     } else {
         std::cout << "Unknown command. Retry later" << '\n';
     }
 }
 
-void aboutAction(std::string_view param)
+void aboutAction()
 {
     std::cout << "A cli Minecraft Java Edition Launcher by PlainsVillager" << '\n';
 }
 
-void shutDownAction(std::string_view param)
+void shutDownAction()
 {
     std::cout << "Shutting down." << '\n';
     std::exit(0);
 }
 
-void refreshInstanceAction(std::string_view param)
+void refreshInstanceAction()
 {
     bgl::Launcher::getSingleton().scanInstance();
 }
@@ -84,7 +89,7 @@ void downloadAction(const std::string& version)
     }
 }
 
-void listAction(std::string_view param)
+void listAction()
 {
     auto& instances = bgl::Launcher::getSingleton().getInstances();
 
@@ -98,21 +103,62 @@ void listAction(std::string_view param)
     }
 }
 
-void launchAction(std::string_view name)
+void launchAction(std::string_view instName, const std::string& playerName)
 {
-    if (name.empty()) {
-        std::cout << "a mc version name must be given as the second param.\n";
+    if (instName.empty() || playerName.empty()) {
+        std::cout << "Invalid syntax.\n";
         return;
     }
+
+    std::string name, uuid;
+    bool flag { false };
+    auto& players { bgl::PlayerManager::getPlayerManagerSingleton().listPlayers() };
+    for (auto& e : players) {
+        if (e.getName() == playerName) {
+            flag = true;
+            name = e.getName();
+            uuid = e.getUuid();
+            break;
+        }
+    }
+
+    if (!flag) {
+        std::cout << "Player not found\n";
+        return;
+    }
+
     auto& instances = bgl::Launcher::getSingleton().getInstances();
     for (auto& instance : instances) {
-        if (instance->getName() == name) {
-            instance->launch();
+        if (instance->getName() == instName) {
+            instance->launch(name, uuid);
             break;
         }
     }
 }
+
+void playerAction(std::string operation, std::string player_name) // NOLINT
+{
+    if (operation == "add") {
+        if (player_name.empty())
+            std::cout << "Invalid syntax\n";
+        bgl::PlayerManager::getPlayerManagerSingleton().add(player_name, bgl::generateUUID());
+        bgl::PlayerManager::getPlayerManagerSingleton().save();
+    } else if (operation == "remove") {
+        if (player_name.empty())
+            std::cout << "Invalid syntax\n";
+        bgl::PlayerManager::getPlayerManagerSingleton().remove(player_name);
+        bgl::PlayerManager::getPlayerManagerSingleton().save();
+    } else if (operation == "list") {
+        auto& vec { bgl::PlayerManager::getPlayerManagerSingleton().listPlayers() };
+        for (auto& player : vec) {
+            std::cout << player.getName() << ' ' << player.getUuid() << '\n';
+        }
+    } else {
+        std::cout << "Invalid syntax\n";
+    }
 }
+
+} // namespace
 
 namespace bgl {
 Launcher::Launcher() = default;
@@ -125,21 +171,11 @@ Launcher& Launcher::getSingleton()
 
 void Launcher::startLoop()
 {
-    // function table consists of vary actions
-    std::unordered_map<std::string, std::function<void(std::string)>> actions;
-
-    actions.insert_or_assign("about", &aboutAction);
-    actions.insert_or_assign("download", &downloadAction);
-    actions.insert_or_assign("exit", &shutDownAction);
-    actions.insert_or_assign("help", &helpAction);
-    actions.insert_or_assign("launch", &launchAction);
-    actions.insert_or_assign("list", &listAction);
-    actions.insert_or_assign("refresh", &refreshInstanceAction);
-
     printWelcome();
 
     while (true) {
         getSingleton().scanInstance();
+        PlayerManager::getPlayerManagerSingleton().load();
         std::cout << ">>";
         std::string cmd;
         std::getline(std::cin, cmd);
@@ -152,16 +188,33 @@ void Launcher::startLoop()
         }
         if (args.size() == 1) {
             args.emplace_back();
-        } else if (args.size() >= 3) {
+        } else if (args.size() >= 4) {
             std::cout << "Too many arguments." << '\n';
             continue;
         } else if (arg.empty()) {
             continue;
         }
+        // execute
         try {
-            actions[args.at(0)](args.at(1));
-        } catch (const std::bad_function_call&) {
-            std::cout << "Unknown command. Type help for command list." << '\n';
+            if (args[0] == "about") {
+                aboutAction();
+            } else if (args[0] == "download") {
+                downloadAction(args.at(1));
+            } else if (args[0] == "exit") {
+                shutDownAction();
+            } else if (args[0] == "help") {
+                helpAction(args.at(1));
+            } else if (args[0] == "launch") {
+                launchAction(args.at(1), args.at(2));
+            } else if (args[0] == "list") {
+                listAction();
+            } else if (args[0] == "refresh") {
+                refreshInstanceAction();
+            } else if (args[0] == "player") {
+                playerAction(args.at(1), args.at(2));
+            }
+        } catch (const std::out_of_range& e) {
+            std::cerr << "Too less arguments. Please retry.\n";
         }
     }
 }
@@ -189,4 +242,4 @@ void Launcher::scanInstance()
         }
     }
 }
-}
+} // namespace bgl

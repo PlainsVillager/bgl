@@ -3,7 +3,7 @@
 int debug()
 {
     int a = 0;
-    return 1 / 0;
+    return 1 / a;
 }
 
 int main()

@@ -3,7 +3,7 @@ project(bgl LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-# set(CMAKE_CXX_CLANG_TIDY clang-tidy -checks=-*,bugprone-*,google-*,performance-*,modernize-*,clang-analyzer-core.*)
+# set(CMAKE_CXX_CLANG_TIDY clang-tidy -checks=-*,bugprone-*,google-*,-google-readability-braces-around-statements,performance-*,modernize-*,-modernize-use-trailing-return-type,clang-analyzer-core.*)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -17,7 +17,11 @@ add_executable(bgl main.cpp
         include/Launcher.h
         src/Launcher.cpp
         src/Utility.cpp
-        src/Instance.cpp)
+        src/Instance.cpp
+        include/configuration/Player.hpp
+        src/configuration/Player.cpp
+        include/configuration/PlayerManager.hpp
+        src/configuration/PlayerManager.cpp)
 
 target_include_directories(bgl PRIVATE ${PROJECT_SOURCE_DIR}/include)
 

@@ -1,3 +1,4 @@
+// NOLINTBEGIN
 /*
     sha1.hpp - source code of
 
@@ -310,3 +311,4 @@ inline std::string SHA1::from_file(const std::string& filename)
 }
 
 #endif /* SHA1_HPP */
+// NOLINTEND

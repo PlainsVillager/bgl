@@ -9,7 +9,6 @@
 #include <string_view>
 #include <vector>
 
-
 #include "Instance.h"
 
 namespace bgl {

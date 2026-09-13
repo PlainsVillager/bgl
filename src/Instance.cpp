@@ -4,6 +4,7 @@
 
 #include "Instance.h"
 #include "Utility.h"
+
 #include <filesystem>
 #include <format>
 #include <fstream>
@@ -29,13 +30,13 @@ std::unique_ptr<nlohmann::json> loadJson(std::ifstream& ifs, const std::string& 
     ifs.close();
     return loaded;
 }
-}
+} // namespace
 
 namespace bgl {
 Instance::Instance(std::string name)
     : name_(name)
-    , path_(".minecraft/versions/" + name)
     , indexCode_("")
+    , path_(".minecraft/versions/" + name)
 {
 }
 
@@ -127,7 +128,7 @@ bool Instance::downloadAndVerify()
 }
 
 // todo replace system(const char* cmd)
-void Instance::launch()
+void Instance::launch(const std::string& name, const std::string& uuid)
 {
     std::cout << "Downloading and verifying specified version\n";
 
@@ -161,18 +162,18 @@ void Instance::launch()
     args.append(" ");
 
     args.append("net.minecraft.client.main.Main ");
-    args.append("--username \"steve\" ");
+    args.append("--username \"" + name + "\" ");
     args.append(std::format("--version \"{}\" ", name_));
     args.append(std::format("--gameDir \"{}\" ", fs::absolute(std::format(".minecraft/versions/{}", name_)).generic_string()));
     args.append(std::format("--assetsDir \"{}\" ", fs::absolute(".minecraft/assets").generic_string()));
     args.append(std::format("--assetIndex {} ", indexCode_));
-    args.append("--uuid 380df991f603344ca090369bad2a924a --accessToken c09158f8ac46412d8a9f142833993627 ");
+    args.append("--uuid " + uuid + " --accessToken c09158f8ac46412d8a9f142833993627 ");
 
     auto launchBat { "args.bat" };
     std::ofstream ofs(launchBat);
     ofs << args;
     ofs.close();
 
-    system("args.bat");
+    system("args.bat"); // NOLINT
 }
-}
+} // namespace bgl

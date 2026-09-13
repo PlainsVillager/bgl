@@ -15,11 +15,9 @@ public:
     // view
     [[nodiscard]] std::string getName() const;
 
-    bool compare(const Instance& other) const;
-
     // actions
     bool downloadAndVerify();
-    void launch();
+    void launch(const std::string& name, const std::string& uuid);
 
 private:
     std::string name_;
@@ -27,6 +25,6 @@ private:
 
     std::filesystem::path path_;
 };
-}
+} // namespace bgl
 
 #endif // BGL_INSTANCE_H
