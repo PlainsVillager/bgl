@@ -5,12 +5,10 @@
 out/
 build/
 .cache/
-cmake_generate.bat
-.minecraft/
 .zed/
+Testing/
 
 # llvm tools
-.clang-format
 .clang-tidy*
 
 # vcpkg config

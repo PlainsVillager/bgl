@@ -20,8 +20,7 @@ namespace {
 namespace fs = std::filesystem;
 
 // todo: method not implemented yet
-bool compareSHA1(const fs::path& fullPath, const std::string& expectedSHA1)
-{
+bool compareSHA1(const fs::path& fullPath, const std::string& expectedSHA1) {
     // clang-format off
     if (expectedSHA1.empty()) return true;
     auto calculatedSHA1 =  SHA1::from_file(fs::absolute(fullPath).generic_string());
@@ -32,13 +31,14 @@ bool compareSHA1(const fs::path& fullPath, const std::string& expectedSHA1)
 }
 
 // path: whole path of the file e.g Directory/FileName.txt
-// sha1: SHA-1 value of the file. This will be checked when the file already exists
-// todo: use a high concurrency friendly method
-bool downloadFile(const std::string& url, const std::string& path, const std::string& sha1) // NOLINT
+// sha1: SHA-1 value of the file. This will be checked when the file already
+// exists todo: use a high concurrency friendly method
+bool downloadFile(const std::string& url, const std::string& path,
+                  const std::string& sha1) // NOLINT
 {
 
     std::string fileName = bgl::getFileName(url);
-    fs::path fullPath { path + '/' + fileName };
+    fs::path fullPath{path + '/' + fileName};
     if (!fs::exists(path))
         fs::create_directories(path);
 
@@ -56,10 +56,11 @@ bool downloadFile(const std::string& url, const std::string& path, const std::st
         return false;
     }
 
-    cpr::Response r = cpr::Download(out, cpr::Url { url });
+    cpr::Response r = cpr::Download(out, cpr::Url{url});
 
     if (r.status_code != 200) {
-        std::cerr << "Failed: " << r.status_code << " " << r.error.message << " will retry\n";
+        std::cerr << "Failed: " << r.status_code << " " << r.error.message
+                  << " will retry\n";
         return false;
     }
     out.close();
@@ -69,8 +70,8 @@ bool downloadFile(const std::string& url, const std::string& path, const std::st
 
 namespace bgl {
 // todo: use a high concurrency friendly print function instead of stdout
-bool tryDownloadFile(std::string&& url, std::string&& path, const std::size_t tryTimes, std::string&& sha1)
-{
+bool tryDownloadFile(std::string&& url, std::string&& path,
+                     const std::size_t tryTimes, std::string&& sha1) {
 
     for (std::size_t i = 0; i < tryTimes; ++i) {
         // clang-format off
@@ -83,8 +84,7 @@ bool tryDownloadFile(std::string&& url, std::string&& path, const std::size_t tr
 
 // todo(***): if one worker failed, stop all workers and publish this message
 // todo(**): performance optimization
-void multiThreadDownload(std::queue<std::array<std::string, 3>>& files)
-{
+void multiThreadDownload(std::queue<std::array<std::string, 3>>& files) {
     /* std::size_t threadNum { std::thread::hardware_concurrency() };
     if (threadNum == 0)
         threadNum = 1;
@@ -109,7 +109,8 @@ void multiThreadDownload(std::queue<std::array<std::string, 3>>& files)
                     task = std::move(files.front());
                     files.pop();
                 }
-                bool isSuccess = tryDownloadFile(std::move(task[0]), std::move(task[1]), 3, std::move(task[2]));
+                bool isSuccess = tryDownloadFile(std::move(task[0]),
+    std::move(task[1]), 3, std::move(task[2]));
                 --remainingTasks;
                 if (!isSuccess) {
                     stop = true;
@@ -258,15 +259,11 @@ void multiThreadDownload(std::queue<std::array<std::string, 3>>& files)
     // clang-format on
 }
 
-std::string getFileName(const std::string& urlOrPath)
-{
+std::string getFileName(const std::string& urlOrPath) {
     const std::size_t slashPos = urlOrPath.find_last_of('/');
     return urlOrPath.substr(slashPos + 1);
 }
 
-std::string generateUUID()
-{
-    return "TODO";
-}
+std::string generateUUID() { return "TODO"; }
 
 } // namespace bgl
