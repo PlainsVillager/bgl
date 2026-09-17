@@ -10,7 +10,7 @@
 namespace bgl {
 class Instance {
 public:
-    explicit Instance(std::string name);
+    explicit Instance(const std::string& name);
 
     // view
     [[nodiscard]] std::string getName() const;

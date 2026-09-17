@@ -19,7 +19,6 @@
 namespace {
 namespace fs = std::filesystem;
 
-// todo: method not implemented yet
 bool compareSHA1(const fs::path& fullPath, const std::string& expectedSHA1) {
     // clang-format off
     if (expectedSHA1.empty()) return true;
@@ -33,8 +32,9 @@ bool compareSHA1(const fs::path& fullPath, const std::string& expectedSHA1) {
 // path: whole path of the file e.g Directory/FileName.txt
 // sha1: SHA-1 value of the file. This will be checked when the file already
 // exists todo: use a high concurrency friendly method
+// NOLINTBEGIN
 bool downloadFile(const std::string& url, const std::string& path,
-                  const std::string& sha1) // NOLINT
+                  const std::string& sha1) // NOLINTEND
 {
 
     std::string fileName = bgl::getFileName(url);
@@ -82,55 +82,7 @@ bool tryDownloadFile(std::string&& url, std::string&& path,
     return false;
 }
 
-// todo(***): if one worker failed, stop all workers and publish this message
-// todo(**): performance optimization
 void multiThreadDownload(std::queue<std::array<std::string, 3>>& files) {
-    /* std::size_t threadNum { std::thread::hardware_concurrency() };
-    if (threadNum == 0)
-        threadNum = 1;
-
-    std::mutex mtx1;
-    std::condition_variable cv;
-    std::atomic remainingTasks(files.size());
-    std::atomic_bool stop = false;
-    std::vector<std::thread> workers;
-    workers.reserve(threadNum);
-
-    for (size_t i = 0; i < threadNum; ++i) {
-        workers.emplace_back([&] {
-            while (true) {
-                std::array<std::string, 3> task; // order: url path sha1
-                {
-                    std::unique_lock lock(mtx1);
-                    cv.wait(lock, [&]() { return stop || !files.empty(); });
-                    if (stop && files.empty()) {
-                        return;
-                    }
-                    task = std::move(files.front());
-                    files.pop();
-                }
-                bool isSuccess = tryDownloadFile(std::move(task[0]),
-    std::move(task[1]), 3, std::move(task[2]));
-                --remainingTasks;
-                if (!isSuccess) {
-                    stop = true;
-                    cv.notify_all();
-                }
-            }
-        });
-    }
-    while (remainingTasks > 0) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    }
-
-    stop = true;
-
-    cv.notify_all();
-
-    for (auto& t : workers) {
-        t.join();
-    } */
-
     // clang-format off
     // ---------------------------------------------------------------------------
     // v2 (previous attempt, kept for reference)

@@ -16,8 +16,7 @@
 #include <vector>
 
 namespace {
-std::unique_ptr<nlohmann::json> loadJson(std::ifstream& ifs, const std::string& path)
-{
+std::unique_ptr<nlohmann::json> loadJson(std::ifstream& ifs, const std::string& path) {
     if (ifs.is_open())
         ifs.close();
     ifs.open(path);
@@ -33,22 +32,17 @@ std::unique_ptr<nlohmann::json> loadJson(std::ifstream& ifs, const std::string& 
 } // namespace
 
 namespace bgl {
-Instance::Instance(std::string name)
+Instance::Instance(const std::string& name)
     : name_(name)
     , indexCode_("")
-    , path_(".minecraft/versions/" + name)
-{
-}
+    , path_(".minecraft/versions/" + name) { }
 
-std::string Instance::getName() const
-{
-    return name_;
-}
+std::string Instance::getName() const { return name_; }
 
 /// @brief download a instance according to `name_`
-bool Instance::downloadAndVerify()
-{
-    tryDownloadFile("https://piston-meta.mojang.com/mc/game/version_manifest_v2.json",
+bool Instance::downloadAndVerify() {
+    tryDownloadFile(
+        "https://piston-meta.mojang.com/mc/game/version_manifest_v2.json",
         ".minecraft/versions");
     // load manifest
     std::ifstream ifs;
@@ -58,7 +52,8 @@ bool Instance::downloadAndVerify()
 
     // parse list
     // std::unordered_map<std::string, std::string> versions;
-    std::unordered_map<std::string, std::pair<std::string, std::string>> versions; // id url sha1
+    std::unordered_map<std::string, std::pair<std::string, std::string>>
+        versions; // id url sha1
     for (const auto& elem : (*manifest)["versions"]) {
         std::string id = elem["id"];
         std::string url = elem["url"];
@@ -70,8 +65,8 @@ bool Instance::downloadAndVerify()
     }
 
     tryDownloadFile(std::move(versions[name_].first),
-        ".minecraft/versions/" + name_, 3,
-        std::move(versions[name_].second));
+                    ".minecraft/versions/" + name_, 3,
+                    std::move(versions[name_].second));
 
     // load json
     auto verJson = loadJson(ifs, ".minecraft/versions/" + name_ + '/' + name_ + ".json");
@@ -85,11 +80,11 @@ bool Instance::downloadAndVerify()
 
     //  download client jar
     tryDownloadFile((*verJson)["downloads"]["client"]["url"],
-        ".minecraft/versions/" + name_,
-        3, (*verJson)["downloads"]["client"]["sha1"]);
+                    ".minecraft/versions/" + name_, 3,
+                    (*verJson)["downloads"]["client"]["sha1"]);
     //  download index
     tryDownloadFile((*verJson)["assetIndex"]["url"],
-        ".minecraft/assets/indexes");
+                    ".minecraft/assets/indexes");
 
     //  parse libraries
     std::vector<std::string> librariesUrl;
@@ -99,8 +94,11 @@ bool Instance::downloadAndVerify()
     for (const auto& elem : (*verJson)["libraries"]) {
         std::string url = elem["downloads"]["artifact"]["url"];
         std::string hash = elem["downloads"]["artifact"]["sha1"];
-        std::filesystem::path artifactPath { elem["downloads"]["artifact"]["path"].get<std::string>() };
-        std::string path = (std::filesystem::path { ".minecraft/libraries" } / artifactPath.parent_path()).generic_string();
+        std::filesystem::path artifactPath {
+            elem["downloads"]["artifact"]["path"].get<std::string>()
+        };
+        std::string path = (std::filesystem::path { ".minecraft/libraries" } / artifactPath.parent_path())
+                               .generic_string();
         librariesUrl.emplace_back(std::move(url));
         librariesHash.emplace_back(std::move(hash));
         librariesPath.emplace_back(std::move(path));
@@ -111,16 +109,21 @@ bool Instance::downloadAndVerify()
     if (!index)
         return false;
     //  assets push queue
-    std::queue<std::array<std::string, 3>> filesWithHash { }; // order: url path hash
+    std::queue<std::array<std::string, 3>>
+        filesWithHash { }; // order: url path hash
     for (auto [filePath, fileInfo] : (*index)["objects"].items()) {
         std::string hashFull { fileInfo["hash"] };
         std::string hashFront { hashFull.substr(0, 2) };
         std::string url = "https://bmclapi2.bangbang93.com/assets/" + hashFront + "/" += hashFull;
-        filesWithHash.emplace(std::array { std::move(url), ".minecraft/assets/objects/" + hashFront, std::move(hashFull) });
+        filesWithHash.emplace(
+            std::array { std::move(url), ".minecraft/assets/objects/" + hashFront,
+                         std::move(hashFull) });
     }
 
     for (std::size_t i = 0; i < librariesUrl.size(); ++i) {
-        filesWithHash.emplace(std::array { std::move(librariesUrl[i]), std::move(librariesPath[i]), std::move(librariesHash[i]) });
+        filesWithHash.emplace(std::array { std::move(librariesUrl[i]),
+                                           std::move(librariesPath[i]),
+                                           std::move(librariesHash[i]) });
     }
     multiThreadDownload(filesWithHash);
 
@@ -128,8 +131,7 @@ bool Instance::downloadAndVerify()
 }
 
 // todo replace system(const char* cmd)
-void Instance::launch(const std::string& name, const std::string& uuid)
-{
+void Instance::launch(const std::string& name, const std::string& uuid) {
     std::cout << "Downloading and verifying specified version\n";
 
     if (!downloadAndVerify()) {
@@ -140,7 +142,8 @@ void Instance::launch(const std::string& name, const std::string& uuid)
     args.append("@echo off\n");
     namespace fs = std::filesystem;
     fs::path nativePath = fs::absolute(std::format(".minecraft/versions/{}/natives", name_));
-    args.append(std::format("java -Djava.library.path={} ", nativePath.generic_string()));
+    args.append(std::format("java -Djava.library.path={} ",
+                            nativePath.generic_string()));
     args.append("-cp ");
 
     // load json file
@@ -150,6 +153,7 @@ void Instance::launch(const std::string& name, const std::string& uuid)
     ifs >> json;
     ifs.close();
 
+    // clang-format off
     for (const auto& elem : json["libraries"]) {
         {
             std::string relativePath = elem["downloads"]["artifact"]["path"];
@@ -175,5 +179,6 @@ void Instance::launch(const std::string& name, const std::string& uuid)
     ofs.close();
 
     system("args.bat"); // NOLINT
+    // clang-format on
 }
 } // namespace bgl

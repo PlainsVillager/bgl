@@ -1,9 +1,21 @@
+# ---
+# BasedOnStyle: LLVM
+# IndentWidth: 4
+# ---
+# Language: Cpp
+# DerivePointerAlignment: false
+# PointerAlignment: Left
+# BreakTemplateDeclarations: Yes
+# IndentAccessModifiers: false
+# ---
 ---
-BasedOnStyle: LLVM
-IndentWidth: 4
+BasedOnStyle: WebKit
 ---
 Language: Cpp
-DerivePointerAlignment: false
-PointerAlignment: Left
-BreakTemplateDeclarations: Yes
+AllowShortFunctionsOnASingleLine: All
+AllowShortBlocksOnASingleLine: Always
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse
+AllowShortLoopsOnASingleLine: true
+BinPackParameters: true
+BreakBeforeBraces: Attach
 ---

@@ -8,19 +8,19 @@ find_package(cpr CONFIG REQUIRED)
 #
 ## bgl
 add_executable(bgl main.cpp
-        include/sha1.hpp
-        include/Utility.h
-        include/Instance.h
-        include/Launcher.h
-        src/Launcher.cpp
-        src/Utility.cpp
-        src/Instance.cpp
-        include/configuration/Player.hpp
-        src/configuration/Player.cpp
-        include/configuration/PlayerManager.hpp
-        src/configuration/PlayerManager.cpp)
+        core/include/sha1.hpp
+        core/include/Utility.h
+        core/include/Instance.h
+        core/include/Launcher.h
+        core/src/Launcher.cpp
+        core/src/Utility.cpp
+        core/src/Instance.cpp
+        core/include/configuration/Player.hpp
+        core/src/configuration/Player.cpp
+        core/include/configuration/PlayerManager.hpp
+        core/src/configuration/PlayerManager.cpp)
 
-target_include_directories(bgl PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(bgl PRIVATE ${PROJECT_SOURCE_DIR}/core/include)
 
 target_link_libraries(bgl PRIVATE nlohmann_json::nlohmann_json)
 target_link_libraries(bgl PRIVATE cpr::cpr)
