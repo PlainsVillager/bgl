@@ -6,7 +6,6 @@
 #include "configuration/Player.hpp"
 #include <algorithm>
 #include <cstddef>
-#include <filesystem>
 #include <fstream>
 #include <iterator>
 #include <stdexcept>
@@ -52,13 +51,7 @@ ActionResult PlayerManager::remove(const std::string& name)
 }
 ActionResult PlayerManager::save()
 {
-    namespace fs = std::filesystem;
-    fs::path fsConfigFile { "bgl/config/players.txt" };
-    std::ofstream ofs(fsConfigFile);
-    if (fs::exists(fsConfigFile)) {
-        // exists
-    }
-
+    std::ofstream ofs("players.txt", std::ios::binary);
     if (!ofs.is_open())
         return ActionResult::FAIL;
     for (auto& player : m_players) {
@@ -70,7 +63,7 @@ ActionResult PlayerManager::save()
 ActionResult PlayerManager::load()
 {
     m_players.clear();
-    std::ifstream ifs { "bgl/config/players.txt" };
+    std::ifstream ifs { "players.txt" };
 
     if (!ifs.is_open()) {
         return ActionResult::FAIL;

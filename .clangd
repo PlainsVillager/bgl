@@ -8,17 +8,17 @@ CompileFlags:
 
 Diagnostics:
   ClangTidy:
-    Add: 
+    Add:
       - "bugprone-*"
       - "google-*"
       - "modernize-*"
       - "performance-*"
       - "clang-analyzer-core.*"
-    Remove: 
+    Remove:
       - "modernize-use-trailing-return-type"
       - "google-readability-braces-around-statements"
 
-InlayHints:
-  BlockEnd: true
-  ParameterNames: true
-  Enabled: true
+# InlayHints:
+#   BlockEnd: true
+#   ParameterNames: true
+#   Enabled: true

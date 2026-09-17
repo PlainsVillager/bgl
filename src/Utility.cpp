@@ -263,4 +263,10 @@ std::string getFileName(const std::string& urlOrPath)
     const std::size_t slashPos = urlOrPath.find_last_of('/');
     return urlOrPath.substr(slashPos + 1);
 }
+
+std::string generateUUID()
+{
+    return "TODO";
+}
+
 } // namespace bgl
