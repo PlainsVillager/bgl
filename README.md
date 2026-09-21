@@ -8,10 +8,10 @@ I'm learning to make projects with cpp. Don't use as your main launcher
 
 ### Build Environment
 
-- Windows 11 Professional x64
-- Mingw-w64 ucrt64 gcc 16.2.0
-- CMake 4.4.3 Ninja Multi-Config
-- Dependencies: [nlohmann-json](https://github.com/nlohmann/json), [cpr](https://github.com/libcpr/cpr), [sha1](https://github.com/vog/sha1), [stduuid](https://github.com/mariusbancila/stduuid)
+- Windows 11
+- mingw gcc 16.2
+- CMake
+- Dependencies: [nlohmann-json](https://github.com/nlohmann/json), [cpr](https://github.com/libcpr/cpr), [sha1](https://github.com/vog/sha1)
 - \[Optional\] Clangd, clang-tidy and clang-format is recommended for enhanced coding experience
 
 ### Build Project

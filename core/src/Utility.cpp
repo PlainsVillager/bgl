@@ -2,6 +2,7 @@
 // Created by littl on 2026/9/1.
 //
 #include "Utility.h"
+#include "my_uuid.hpp"
 #include "sha1.hpp"
 #include <algorithm>
 #include <condition_variable>
@@ -13,7 +14,6 @@
 #include <iostream>
 #include <mutex>
 #include <random>
-#include <stduuid/uuid.h>
 #include <thread>
 #include <utility>
 #include <vector>
@@ -219,15 +219,8 @@ std::string getFileName(const std::string& urlOrPath) {
 }
 
 std::string generateUUID() {
-    std::random_device rd;
-    auto seed_data = std::array<int, std::mt19937::state_size> { };
-    std::generate(std::begin(seed_data), std::end(seed_data), std::ref(rd));
-    std::seed_seq seq(std::begin(seed_data), std::end(seed_data));
-    std::mt19937 generator(seq);
-    uuids::uuid_random_generator gen { generator };
-
-    const uuids::uuid id = gen();
-    return uuids::to_string(id);
+    my_uuid::v4::uuid_v4 uuid;
+    return uuid.to_string_with_connect();
 }
 
 } // namespace bgl

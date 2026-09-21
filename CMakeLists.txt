@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 4.4)
+cmake_minimum_required(VERSION 4.0)
 project(bgl LANGUAGES CXX)
 
 find_package(nlohmann_json CONFIG REQUIRED)
