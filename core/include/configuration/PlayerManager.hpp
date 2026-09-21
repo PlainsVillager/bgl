@@ -12,7 +12,11 @@
 
 namespace bgl {
 
-// Registered players manager
+/**
+ * Registered players manager
+ * Players configuration is saved in %PROGRAM_PATH%/players.txt
+ * A singleton class. See Player.hpp
+ */
 class PlayerManager {
 public:
     static PlayerManager& getPlayerManagerSingleton();
@@ -23,6 +27,7 @@ public:
     PlayerManager& operator=(const PlayerManager& other) = delete;
     PlayerManager& operator=(PlayerManager&& other) = delete;
 
+    // players.txt related operations
     ActionResult add(const std::string& name, const std::string& uuid);
     ActionResult remove(const std::string& name);
     ActionResult save();

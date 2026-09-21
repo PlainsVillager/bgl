@@ -16,7 +16,7 @@ I'm learning to make projects with cpp. Don't use as your main launcher
 
 ### Build Project
 
-1. Clone this repository
+1. Clone this repository and navigate to root directory
 2. Run `vcpkg new --application` to deploy vcpkg manifest mode
 3. Run `cmake --preset default` to configure project
 4. Run `cmake --build build --config Release` to build release binary executable file

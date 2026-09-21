@@ -6,26 +6,25 @@
 #include "configuration/Player.hpp"
 #include <algorithm>
 #include <cstddef>
+#include <cstdint>
 #include <fstream>
+#include <iostream>
 #include <iterator>
 #include <stdexcept>
 #include <string>
 #include <vector>
 
 namespace bgl {
-PlayerManager& PlayerManager::getPlayerManagerSingleton()
-{
+PlayerManager& PlayerManager::getPlayerManagerSingleton() {
     static PlayerManager playerManager;
     return playerManager;
 }
 
 PlayerManager::PlayerManager()
-    : m_players()
-{
+    : m_players() {
 }
 
-ActionResult PlayerManager::add(const std::string& name, const std::string& uuid)
-{
+ActionResult PlayerManager::add(const std::string& name, const std::string& uuid) {
     std::vector<std::string> player_names { };
     player_names.reserve(m_players.size());
     std::ranges::transform(
@@ -39,29 +38,31 @@ ActionResult PlayerManager::add(const std::string& name, const std::string& uuid
         return ActionResult::SUCCESS;
     }
 }
-ActionResult PlayerManager::remove(const std::string& name)
-{
+
+ActionResult PlayerManager::remove(const std::string& name) {
     for (std::size_t i { }; i < m_players.size(); ++i) {
         if (m_players[i].getName() == name) {
-            m_players.erase(std::begin(m_players) + i); // NOLINT
+            m_players.erase(std::begin(m_players) + static_cast<int64_t>(i));
             return ActionResult::SUCCESS;
         }
     }
     return ActionResult::FAIL;
 }
-ActionResult PlayerManager::save()
-{
+
+ActionResult PlayerManager::save() {
     std::ofstream ofs("players.txt", std::ios::binary);
-    if (!ofs.is_open())
+    if (!ofs.is_open()) {
+        std::cout << "Failed to save player configuration\n";
         return ActionResult::FAIL;
+    }
     for (auto& player : m_players) {
         ofs << std::string { player.getName() + ' ' + player.getUuid() + '\n' };
     }
     ofs.close();
     return ActionResult::SUCCESS;
 }
-ActionResult PlayerManager::load()
-{
+
+ActionResult PlayerManager::load() {
     m_players.clear();
     std::ifstream ifs { "players.txt" };
 
@@ -85,8 +86,7 @@ ActionResult PlayerManager::load()
     return ActionResult::SUCCESS;
 }
 
-const std::vector<Player>& PlayerManager::listPlayers()
-{
+const std::vector<Player>& PlayerManager::listPlayers() {
     return m_players;
 }
 

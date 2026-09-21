@@ -5,6 +5,7 @@
 #include "Utility.h"
 #include "configuration/Player.hpp"
 #include "configuration/PlayerManager.hpp"
+#include <cstdint>
 #include <filesystem>
 #include <format>
 #include <iostream>
@@ -35,15 +36,19 @@ void helpAction(std::string_view queryCmd) {
     } else if (queryCmd == "list") {
         std::cout << "List local installed instances" << '\n';
     } else if (queryCmd == "launch") {
-        std::cout << "Launch a local Minecraft instance\n"
+        std::cout << "Launch an installed Minecraft instance\n"
                   << "command syntax: launch <name: string> <player_name: string>\n"
-                  << "param explanation: \"name\" for e.g. 26.2 or 20w06a or 26.3-snapshot-10 with no blank)" << "param explanation: \"name\" for e.g. 26.2 or 20w06a or 26.3-snapshot-10 with no blank)" << '\n';
+                  << "param explanation: \"name\" for e.g. 26.2, 26.3-rc-1 20w06a or 26.3-snapshot-10" << "param explanation: \"name\" for e.g. 26.2 or 20w06a or 26.3-snapshot-10 with no blank)" << '\n'
+                  << "By default. Bgl will use java in your %path% to launch Minecraft\n";
     } else if (queryCmd == "player") {
         std::cout << "Player related operation\n";
         std::cout << "player <operation> <playerName : string>\n"
                   << "operation: add, remove, list\n";
     } else if (queryCmd == "refresh") {
         std::cout << "Refresh versions installed\n";
+    } else if (queryCmd == "remove") {
+        // std::cout << "Remove a minecraft instance to recycle bin.\n";
+        std::cout << "Remove a minecraft instance permanently.\n";
     } else if (queryCmd.empty()) {
         std::cout << "about\ndownload\nexit\nhelp\nlist\nlaunch\nplayer\nrefresh\nremove\nupdate\n";
     } else {
@@ -52,14 +57,17 @@ void helpAction(std::string_view queryCmd) {
 }
 
 void aboutAction() {
-    std::cout << "A cli Minecraft Java Edition Launcher by PlainsVillager" << '\n';
+    std::cout << "A cli Minecraft Launcher by PlainsVillager\n"
+              << "GitHub: https://github.com/PlainsVillager/bgl\n"
+              << "DO NOT LEAVE FOR ACTUAL USE\n";
 }
 
 void shutDownAction() {
-    std::cout << "Shutting down." << '\n';
+    std::cout << "Shutting down.\n";
     std::exit(0);
 }
 
+// refresh instance list from disk
 void refreshInstanceAction() {
     bgl::Launcher::getSingleton().scanInstance();
 }
@@ -70,7 +78,7 @@ void downloadAction(const std::string& version) {
         return;
     }
     {
-        auto& instances = bgl::Launcher::getSingleton().getInstances();
+        decltype(auto) instances = bgl::Launcher::getSingleton().getInstances();
         for (const auto& instance : instances) {
             if (instance->getName() == version) {
                 std::cout << "This version has been installed. So we will be checking file hash soon.\n";
@@ -92,20 +100,21 @@ void listAction() {
         return;
     }
     std::cout << "Installed Minecraft instances are list below:\n";
-    for (const auto& e : instances) {
+    for (decltype(auto) e : instances) {
         std::cout << e->getName() << '\n';
     }
 }
 
 void launchAction(std::string_view instName, const std::string& playerName) {
-    if (instName.empty() || playerName.empty()) {
-        std::cout << "Invalid syntax. launch <name: string> <player_name: string>\n";
+    auto& players { bgl::PlayerManager::getPlayerManagerSingleton().listPlayers() };
+    if (players.size() == static_cast<uint64_t>(1) && playerName.empty()) {
+    } else if (instName.empty() || playerName.empty()) {
+        std::cout << "Invalid syntax. launch <name: string> [(optional only when only one player on the list)player_name: string]\n";
         return;
     }
 
     std::string name, uuid;
     bool flag { false };
-    auto& players { bgl::PlayerManager::getPlayerManagerSingleton().listPlayers() };
     for (auto& e : players) {
         if (e.getName() == playerName) {
             flag = true;
@@ -120,8 +129,8 @@ void launchAction(std::string_view instName, const std::string& playerName) {
         return;
     }
 
-    auto& instances = bgl::Launcher::getSingleton().getInstances();
-    for (auto& instance : instances) {
+    decltype(auto) instances { bgl::Launcher::getSingleton().getInstances() };
+    for (decltype(auto) instance : instances) {
         if (instance->getName() == instName) {
             std::cout << "Downloading and verifying specified version\n";
             instance->launch(name, uuid);
@@ -154,12 +163,31 @@ void playerAction(std::string operation, std::string player_name = "") // NOLINT
         if (vec.empty()) {
             std::cout << "No player found";
         }
-        for (auto& player : vec) {
+        for (decltype(auto) player : vec) {
             std::cout << player.getName() << ' ' << player.getUuid() << '\n';
         }
     } else {
-        std::cout << "Invalid syntax\n";
+        std::cout << "Unknown subcommand\n";
     }
+}
+
+void removeAction(const std::string& inst_name) {
+    decltype(auto) instances { bgl::Launcher::getSingleton().getInstances() };
+    for (decltype(auto) instance : instances) {
+        if (instance->getName() == inst_name) {
+            std::cout << std::format("Are you going to remove {} permanently?\n Input: [Y] for yes, [N] for no(default option)\n", inst_name);
+            std::string usr_input { };
+            std::getline(std::cin, usr_input);
+            if (usr_input == "Y" || usr_input == "y") {
+                namespace fs = std::filesystem;
+                fs::path inst_dir { ".minecraft/versions/" + inst_name };
+                fs::remove_all(inst_dir);
+                std::cout << "Successfully completed operation\n";
+                return;
+            } else return;
+        }
+    }
+    std::cout << std::format("Instance not found with name \"{}\"\n", inst_name);
 }
 
 } // namespace
@@ -193,7 +221,7 @@ void Launcher::startLoop() {
         } else if (args.size() >= 4) {
             std::cout << "Too many arguments." << '\n';
             continue;
-        } else if (arg.empty()) {
+        } else if (args.empty()) { // Fix: nothing input. used to be checking `arg.empty()`
             continue;
         }
         // execute
@@ -212,9 +240,11 @@ void Launcher::startLoop() {
                 listAction();
             } else if (args[0] == "refresh") {
                 refreshInstanceAction();
+            } else if (args[0] == "remove") {
+                removeAction(args.at(1));
             } else if (args[0] == "player") {
                 if (args.size() == 3) playerAction(args.at(1), args.at(2));
-                else if (args.size() == 2) playerAction(args.at(1));
+                else if (args.size() == 2) playerAction(args.at(1)); // fix: third argument must be given when calling `player list`
             }
         } catch (const std::out_of_range& e) {
             std::cerr << "Too less arguments. Please retry.\n";
@@ -222,10 +252,11 @@ void Launcher::startLoop() {
     }
 }
 
-std::vector<std::unique_ptr<Instance>>& Launcher::getInstances() {
+auto Launcher::getInstances() -> std::vector<std::unique_ptr<Instance>>& {
     return instances_;
 }
 
+// clear all loaded instances and reload from disk
 void Launcher::scanInstance() {
     instances_.clear();
     namespace fs = std::filesystem;
