@@ -132,8 +132,6 @@ bool Instance::downloadAndVerify() {
 
 // todo replace system(const char* cmd)
 void Instance::launch(const std::string& name, const std::string& uuid) {
-    std::cout << "Downloading and verifying specified version\n";
-
     if (!downloadAndVerify()) {
         std::cerr << "Fatal: Failed to download and verify\n";
     }

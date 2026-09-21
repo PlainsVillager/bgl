@@ -1,13 +1,11 @@
-#include "include/Launcher.h"
+#include "core/include/Launcher.h"
 
-int debug()
-{
+int debug() {
     int a = 0;
     return 1 / a;
 }
 
-int main()
-{
+int main() {
     std::ios::sync_with_stdio(false);
     bgl::Launcher::getSingleton().startLoop();
     // debug();

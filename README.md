@@ -8,13 +8,15 @@ I'm learning to make projects with cpp. Don't use as your main launcher
 
 ### Build Environment
 
-- Windows 11 Professional x64 
+- Windows 11 Professional x64
 - Mingw-w64 ucrt64 gcc 16.2.0
-- CMake 4.4.2
-- Visual Studio Code
-- Dependencies: [nlohmann-json](https://github.com/nlohmann/json), [cpr](https://github.com/libcpr/cpr), [sha1](https://github.com/vog/sha1)
+- CMake 4.4.3 Ninja Multi-Config
+- Dependencies: [nlohmann-json](https://github.com/nlohmann/json), [cpr](https://github.com/libcpr/cpr), [sha1](https://github.com/vog/sha1), [stduuid](https://github.com/mariusbancila/stduuid)
 - \[Optional\] Clangd, clang-tidy and clang-format is recommended for enhanced coding experience
 
-### Notice of using vcpkg as package manager
+### Build Project
 
-Please use manifest mode and `x64-mingw-static` triplet(I've configured in CMakePresets.json)
+1. Clone this repository
+2. Run `vcpkg new --application` to deploy vcpkg manifest mode
+3. Run `cmake --preset default` to configure project
+4. Run `cmake --build build --config Release` to build release binary executable file

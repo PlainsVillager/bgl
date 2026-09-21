@@ -35,7 +35,7 @@ private:
 
 namespace bgl::constants {
 inline constexpr std::string_view LAUNCHER_VER_MAJOR_STR = "alpha";
-inline constexpr std::string_view LAUNCHER_VER_MINOR_STR = "build Sep 6 2026 UTC 9: 08";
+inline constexpr std::string_view LAUNCHER_VER_MINOR_STR = "build Sep 21 2026 UTC 1: 07";
 }
 
 #endif // BGL_LAUNCHER_H

@@ -17,13 +17,11 @@
 #include <vector>
 
 namespace {
-void printWelcome()
-{
+void printWelcome() {
     std::cout << "Bgl Minecraft Launcher Console Version " << bgl::constants::LAUNCHER_VER_MAJOR_STR << '.' << bgl::constants::LAUNCHER_VER_MINOR_STR << '\n';
 }
 
-void helpAction(std::string_view queryCmd)
-{
+void helpAction(std::string_view queryCmd) {
     if (queryCmd == "about") {
         std::cout << "About this program" << '\n';
     } else if (queryCmd == "download") {
@@ -38,11 +36,12 @@ void helpAction(std::string_view queryCmd)
         std::cout << "List local installed instances" << '\n';
     } else if (queryCmd == "launch") {
         std::cout << "Launch a local Minecraft instance\n"
-                  << "command syntax: launch <name: string>\n"
+                  << "command syntax: launch <name: string> <player_name: string>\n"
                   << "param explanation: \"name\" for e.g. 26.2 or 20w06a or 26.3-snapshot-10 with no blank)" << "param explanation: \"name\" for e.g. 26.2 or 20w06a or 26.3-snapshot-10 with no blank)" << '\n';
     } else if (queryCmd == "player") {
         std::cout << "Player related operation\n";
-        std::cout << "player add <playerName : string> or player <playerName : string>\n";
+        std::cout << "player <operation> <playerName : string>\n"
+                  << "operation: add, remove, list\n";
     } else if (queryCmd == "refresh") {
         std::cout << "Refresh versions installed\n";
     } else if (queryCmd.empty()) {
@@ -52,24 +51,20 @@ void helpAction(std::string_view queryCmd)
     }
 }
 
-void aboutAction()
-{
+void aboutAction() {
     std::cout << "A cli Minecraft Java Edition Launcher by PlainsVillager" << '\n';
 }
 
-void shutDownAction()
-{
+void shutDownAction() {
     std::cout << "Shutting down." << '\n';
     std::exit(0);
 }
 
-void refreshInstanceAction()
-{
+void refreshInstanceAction() {
     bgl::Launcher::getSingleton().scanInstance();
 }
 
-void downloadAction(const std::string& version)
-{
+void downloadAction(const std::string& version) {
     if (version.empty()) {
         std::cout << "Please input a mc version name\n";
         return;
@@ -89,8 +84,7 @@ void downloadAction(const std::string& version)
     }
 }
 
-void listAction()
-{
+void listAction() {
     auto& instances = bgl::Launcher::getSingleton().getInstances();
 
     if (instances.empty()) {
@@ -103,10 +97,9 @@ void listAction()
     }
 }
 
-void launchAction(std::string_view instName, const std::string& playerName)
-{
+void launchAction(std::string_view instName, const std::string& playerName) {
     if (instName.empty() || playerName.empty()) {
-        std::cout << "Invalid syntax.\n";
+        std::cout << "Invalid syntax. launch <name: string> <player_name: string>\n";
         return;
     }
 
@@ -130,26 +123,37 @@ void launchAction(std::string_view instName, const std::string& playerName)
     auto& instances = bgl::Launcher::getSingleton().getInstances();
     for (auto& instance : instances) {
         if (instance->getName() == instName) {
+            std::cout << "Downloading and verifying specified version\n";
             instance->launch(name, uuid);
-            break;
+            return;
         }
     }
+    std::cout << instName << " not found.\n";
 }
 
-void playerAction(std::string operation, std::string player_name) // NOLINT
+void playerAction(std::string operation, std::string player_name = "") // NOLINT
 {
     if (operation == "add") {
-        if (player_name.empty())
+        if (player_name.empty()) {
             std::cout << "Invalid syntax\n";
+            return;
+        }
         bgl::PlayerManager::getPlayerManagerSingleton().add(player_name, bgl::generateUUID());
         bgl::PlayerManager::getPlayerManagerSingleton().save();
     } else if (operation == "remove") {
         if (player_name.empty())
             std::cout << "Invalid syntax\n";
-        bgl::PlayerManager::getPlayerManagerSingleton().remove(player_name);
+        // bgl::PlayerManager::getPlayerManagerSingleton().remove(player_name);
+        if (bgl::PlayerManager::getPlayerManagerSingleton().remove(player_name) == bgl::ActionResult::FAIL) {
+            std::cout << "Failed to remove the player: Player not found\n";
+            return;
+        }
         bgl::PlayerManager::getPlayerManagerSingleton().save();
     } else if (operation == "list") {
         auto& vec { bgl::PlayerManager::getPlayerManagerSingleton().listPlayers() };
+        if (vec.empty()) {
+            std::cout << "No player found";
+        }
         for (auto& player : vec) {
             std::cout << player.getName() << ' ' << player.getUuid() << '\n';
         }
@@ -163,14 +167,12 @@ void playerAction(std::string operation, std::string player_name) // NOLINT
 namespace bgl {
 Launcher::Launcher() = default;
 
-Launcher& Launcher::getSingleton()
-{
+Launcher& Launcher::getSingleton() {
     static Launcher singleton { };
     return singleton;
 }
 
-void Launcher::startLoop()
-{
+void Launcher::startLoop() {
     printWelcome();
 
     while (true) {
@@ -211,7 +213,8 @@ void Launcher::startLoop()
             } else if (args[0] == "refresh") {
                 refreshInstanceAction();
             } else if (args[0] == "player") {
-                playerAction(args.at(1), args.at(2));
+                if (args.size() == 3) playerAction(args.at(1), args.at(2));
+                else if (args.size() == 2) playerAction(args.at(1));
             }
         } catch (const std::out_of_range& e) {
             std::cerr << "Too less arguments. Please retry.\n";
@@ -219,13 +222,11 @@ void Launcher::startLoop()
     }
 }
 
-std::vector<std::unique_ptr<Instance>>& Launcher::getInstances()
-{
+std::vector<std::unique_ptr<Instance>>& Launcher::getInstances() {
     return instances_;
 }
 
-void Launcher::scanInstance()
-{
+void Launcher::scanInstance() {
     instances_.clear();
     namespace fs = std::filesystem;
     const fs::path versionsPath = ".minecraft/versions";

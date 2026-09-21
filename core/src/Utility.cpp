@@ -12,6 +12,8 @@
 #include <fstream>
 #include <iostream>
 #include <mutex>
+#include <random>
+#include <stduuid/uuid.h>
 #include <thread>
 #include <utility>
 #include <vector>
@@ -38,7 +40,7 @@ bool downloadFile(const std::string& url, const std::string& path,
 {
 
     std::string fileName = bgl::getFileName(url);
-    fs::path fullPath{path + '/' + fileName};
+    fs::path fullPath { path + '/' + fileName };
     if (!fs::exists(path))
         fs::create_directories(path);
 
@@ -56,7 +58,7 @@ bool downloadFile(const std::string& url, const std::string& path,
         return false;
     }
 
-    cpr::Response r = cpr::Download(out, cpr::Url{url});
+    cpr::Response r = cpr::Download(out, cpr::Url { url });
 
     if (r.status_code != 200) {
         std::cerr << "Failed: " << r.status_code << " " << r.error.message
@@ -216,6 +218,16 @@ std::string getFileName(const std::string& urlOrPath) {
     return urlOrPath.substr(slashPos + 1);
 }
 
-std::string generateUUID() { return "TODO"; }
+std::string generateUUID() {
+    std::random_device rd;
+    auto seed_data = std::array<int, std::mt19937::state_size> { };
+    std::generate(std::begin(seed_data), std::end(seed_data), std::ref(rd));
+    std::seed_seq seq(std::begin(seed_data), std::end(seed_data));
+    std::mt19937 generator(seq);
+    uuids::uuid_random_generator gen { generator };
+
+    const uuids::uuid id = gen();
+    return uuids::to_string(id);
+}
 
 } // namespace bgl
