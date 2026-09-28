@@ -5,6 +5,7 @@
 #include "Utility.h"
 #include "configuration/Player.hpp"
 #include <algorithm>
+#include <cctype>
 #include <cstddef>
 #include <cstdint>
 #include <fstream>
@@ -25,6 +26,18 @@ PlayerManager::PlayerManager()
 }
 
 ActionResult PlayerManager::add(const std::string& name, const std::string& uuid) {
+    // validate player name
+    if (name.size() < 3) {
+        std::cout << "Player name illegal!\n";
+        return ActionResult::FAIL;
+    }
+    for (decltype(auto) ch : name) {
+        if (std::isalpha(ch) || std::isdigit(ch) || ch == '_') {
+        } else {
+            std::cout << "Player name illegal!\n";
+            return ActionResult::FAIL;
+        }
+    }
     std::vector<std::string> player_names { };
     player_names.reserve(m_players.size());
     std::ranges::transform(

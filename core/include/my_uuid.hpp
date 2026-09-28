@@ -10,7 +10,7 @@
 
 namespace my_uuid::v4 {
 
-std::array<char, 7> charset { "abcdef" };
+constexpr std::array<char, 7> charset { "abcdef" };
 constexpr int UUID_HEX_DIGIT_SIZE { 32 };
 
 char dec_to_hex(int dec_val) {
