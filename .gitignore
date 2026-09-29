@@ -10,6 +10,3 @@ Testing/
 
 # llvm tools
 .clang-tidy*
-
-# vcpkg config
-vcpkg-configuration.json

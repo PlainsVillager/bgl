@@ -171,12 +171,18 @@ void Instance::launch(const std::string& name, const std::string& uuid) {
     args.append(std::format("--assetIndex {} ", indexCode_));
     args.append("--uuid " + uuid + " --accessToken c09158f8ac46412d8a9f142833993627 ");
 
-    auto launchBat { "args.bat" };
+    // cross platform process
+#ifdef __unix
+    #define SCRIPT_NAME "args.sh"
+#elifdef WIN32 // new feature added in c++23
+    #define SCRIPT_NAME "args.bat"
+#endif
+
+    auto launchBat { SCRIPT_NAME };
     std::ofstream ofs(launchBat);
     ofs << args;
     ofs.close();
-
-    system("args.bat"); // NOLINT
+    system(SCRIPT_NAME);
     // clang-format on
 }
 } // namespace bgl

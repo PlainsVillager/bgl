@@ -24,15 +24,13 @@ target_include_directories(bgl PRIVATE ${PROJECT_SOURCE_DIR}/core/include)
 
 target_link_libraries(bgl PRIVATE nlohmann_json::nlohmann_json)
 target_link_libraries(bgl PRIVATE cpr::cpr)
-target_link_options(bgl PRIVATE -mconsole)
 
 ## test
 enable_testing()
-
 add_subdirectory(test)
 
 ### test01
 add_test(
   NAME test01
-  COMMAND test/Debug/test01.exe
+  COMMAND test/Debug/test01
 )
