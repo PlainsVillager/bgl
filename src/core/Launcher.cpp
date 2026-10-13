@@ -1,10 +1,10 @@
 //
 // Created by littl on 2026/9/1.
 //
-#include "Launcher.h"
-#include "Utility.h"
-#include "configuration/Player.hpp"
-#include "configuration/PlayerManager.hpp"
+#include "core/Launcher.h"
+#include "core/Utility.h"
+#include "core/configuration/Player.hpp"
+#include "core/configuration/PlayerManager.hpp"
 #include <cstdint>
 #include <filesystem>
 #include <format>
@@ -39,7 +39,7 @@ void helpAction(std::string_view queryCmd) {
         std::cout << "Launch an installed Minecraft instance\n"
                   << "command syntax: launch <name: string> <player_name: string>\n"
                   << "param explanation: \"name\" for e.g. 26.2, 26.3-rc-1 20w06a or 26.3-snapshot-10" << "param explanation: \"name\" for e.g. 26.2 or 20w06a or 26.3-snapshot-10 with no blank)" << '\n'
-                  << "By default. Bgl will use java in your %path% to launch Minecraft\n";
+                  << "By default. Bgl will use java in your \%path\% to launch Minecraft\n";
     } else if (queryCmd == "player") {
         std::cout << "Player related operation\n";
         std::cout << "player <operation> <playerName : string>\n"

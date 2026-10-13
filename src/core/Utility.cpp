@@ -1,9 +1,9 @@
 //
 // Created by littl on 2026/9/1.
 //
-#include "Utility.h"
-#include "my_uuid.hpp"
-#include "sha1.hpp"
+#include "core/Utility.h"
+#include "third_party/my_uuid/my_uuid.hpp"
+#include "third_party/sha1/sha1.hpp"
 #include <algorithm>
 #include <condition_variable>
 #include <cpr/cpr.h>

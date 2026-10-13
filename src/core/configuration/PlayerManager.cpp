@@ -1,9 +1,9 @@
 //
 // Created by littl on 2026/9/13.
 //
-#include "configuration/PlayerManager.hpp"
-#include "Utility.h"
-#include "configuration/Player.hpp"
+#include "core/configuration/PlayerManager.hpp"
+#include "core/Utility.h"
+#include "core/configuration/Player.hpp"
 #include <algorithm>
 #include <cctype>
 #include <cstddef>
@@ -88,7 +88,7 @@ ActionResult PlayerManager::load() {
     while (std::getline(ifs, line)) {
         auto blankPos { line.find_first_of(' ') };
         if (blankPos == std::string::npos) {
-            throw std::logic_error { "players.txt format inproperly" };
+            throw std::logic_error { "players.txt format improperly" };
             return ActionResult::FAIL;
         }
         std::string name = line.substr(0, blankPos);

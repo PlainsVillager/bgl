@@ -5,8 +5,8 @@
 #define BGL_CONFIG_PLAYER_MANAGER_HPP
 
 #include "Player.hpp"
-#include "Utility.h"
-#include "configuration/Player.hpp"
+#include "core/Utility.h"
+#include "core/configuration/Player.hpp"
 #include <string>
 #include <vector>
 

@@ -1,14 +1,13 @@
 //
 // Created by littl on 2026/9/13.
 //
-#include "configuration/Player.hpp"
+#include "core/configuration/Player.hpp"
 
 namespace bgl {
 
 Player::Player(const std::string& name, const std::string& uuid)
     : m_name(name)
-    , m_uuid(uuid)
-{
+    , m_uuid(uuid) {
 }
 
 const std::string Player::getName() const { return m_name; }

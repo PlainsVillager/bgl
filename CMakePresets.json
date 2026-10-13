@@ -3,7 +3,7 @@
   "configurePresets": [
     {
       "name": "default",
-      "displayName": "Default Linux Preset",
+      "displayName": "Default GCC Preset",
       "generator": "Ninja Multi-Config",
       "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
@@ -54,6 +54,18 @@
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_PROJECT_TOP_LEVEL_INCLUDES": "$env{VSINSTALLDIR}Common7/IDE/CommonExtensions/Microsoft/CMake/cmake/Microsoft/SegmentHeap.cmake"
       }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "Debug",
+      "configuration": "Debug",
+      "configurePreset": "default"
+    },
+    {
+      "name": "Release",
+      "configuration": "Release",
+      "configurePreset": "default"
     }
   ]
 }

@@ -31,7 +31,7 @@ private:
     Launcher();
     std::vector<std::unique_ptr<Instance>> instances_ { };
 };
-}
+} // namespace bgl
 
 namespace bgl::constants {
 inline constexpr std::string_view LAUNCHER_VER_MAJOR_STR = "alpha";

@@ -1,12 +1,11 @@
 # build cache
 .idea/
 .vs/
-.vscode
+.vscode/
 out/
 build/
 .cache/
 .zed/
-Testing/
 
 # llvm tools
 .clang-tidy*
